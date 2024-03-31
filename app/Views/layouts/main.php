@@ -18,7 +18,7 @@ if (session_status() === PHP_SESSION_NONE) {
         <script src="https://unpkg.com/three@0.125.0/build/three.min.js"></script>
         <script src="https://unpkg.com/three@0.125.0/examples/js/loaders/GLTFLoader.js"></script>
         <script async defer
-            src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDpQiFpsx6s7ku-9mMf_jt0OcqkUNnK53E&libraries=places,drawing,geometry&callback=initMap"></script>
+            src="https://maps.googleapis.com/maps/api/js?key=<?=$api?>&libraries=places,drawing,geometry&callback=initMap"></script>
         <?php if ($_SERVER['REQUEST_URI'] === '/dashboard'): ?>
             <script src="<?= asset('js/map.js') ?>"></script>
         <?php endif; ?>
