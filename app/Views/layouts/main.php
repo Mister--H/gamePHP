@@ -56,7 +56,7 @@ if (session_status() === PHP_SESSION_NONE) {
                 </a>
                 <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                     <!-- Remove right from dropdown-menu-right -->
-                    <a class="dropdown-item" href="#"><i class="bi bi-gear"></i> Settings</a>
+                    <a class="dropdown-item" href="start/settings"><i class="bi bi-gear"></i> Settings</a>
                     <a class="dropdown-item" href="#"><i class="bi bi-bell"></i> Notifications</a>
                     <div class="dropdown-divider"></div>
                     <a class="dropdown-item" href="/logout"><i class="bi bi-box-arrow-right"></i> Logout</a>

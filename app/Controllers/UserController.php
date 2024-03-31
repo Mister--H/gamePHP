@@ -20,7 +20,10 @@ class UserController
 
     public function settings()
     {
-        renderView('game/settings');
+        $data = [
+            'user' => $_SESSION['user'] ?? '',
+        ];
+        renderView('game/settings', $data);
     }
 
     public function processSettings()

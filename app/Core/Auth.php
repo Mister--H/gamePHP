@@ -21,17 +21,19 @@ class Auth {
         if (!$user) {
             return ['error' => 'Invalid credentials.'];
         }
+        unset($user['password']); // Remove password from user data
+        $_SESSION['user'] = $user;
+        $_SESSION['user_id'] = (string) $_SESSION['user']['_id'];
 
         $payload = [
             "iss" => $_ENV['BASE_URL'],
             "aud" => $_ENV['BASE_URL'],
             "iat" => time(),
             "exp" => time() + (24 * 60 * 60), // Token expires in 1 day
-            "sub" => $user['id'],
+            "sub" => (string) $_SESSION['user']['_id'],
         ];
 
         $jwt = JWT::encode($payload, $this->jwtSecretKey, 'HS256');
-        $_SESSION['user_id'] = $user;
         if ($rememberMe) {
             $rememberToken = bin2hex(random_bytes(16)); // Generate a secure token
             setcookie('remember', $rememberToken, time() + (86400 * 30), "/", "", false, true); // 30 days expiry, HttpOnly
