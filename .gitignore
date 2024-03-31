@@ -1,6 +1,5 @@
-.env
 vendor
 node_modules
+.env
 public/assets/bootstrap-icons/.github
 public/assets/bootstrap-icons/docs
-/.vscode/
