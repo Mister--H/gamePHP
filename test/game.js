@@ -7,7 +7,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function loadGoogleMapsAPI() {
     const script = document.createElement('script');
-    script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyDpQiFpsx6s7ku-9mMf_jt0OcqkUNnK53E&callback=initMap`;
     script.async = true;
     script.defer = true;
     document.head.appendChild(script);
