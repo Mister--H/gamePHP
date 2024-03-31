@@ -17,12 +17,16 @@ class PageController
         renderView('home');
     }
 
-    public function dashboard()
+    public function start()
     {
         $data = [
             'api' => $_ENV['GOOGLE_MAPS_API_KEY'] ?? null,
         ];
         renderView('game/index', $data);
+    }
+    public function settings()
+    {
+        echo "Hello";
     }
 
 }

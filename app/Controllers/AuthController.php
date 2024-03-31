@@ -21,7 +21,7 @@ class AuthController
     public function showLoginForm()
     {
         if ($this->auth->isLoggedIn()) {
-            header('Location: /dashboard');
+            header('Location: /start');
             exit;
         }
         renderView('auth/login');
@@ -42,13 +42,13 @@ class AuthController
         }
 
         setcookie('token', $result['token'], ['httponly' => true, 'samesite' => 'Strict']);
-        header('Location: /dashboard');
+        header('Location: /start');
         exit;
     }
     public function showRegistrationForm()
     {
         if ($this->auth->isLoggedIn()) {
-            header('Location: /dashboard');
+            header('Location: /start');
             exit;
         }
         renderView('auth/register');
@@ -71,6 +71,32 @@ class AuthController
         // Insert the new user
         $this->user->register($name, $email, $password);
         // Redirect or send a success message
-        header('Location: /dashboard');
+        header('Location: /start');
+    }
+
+    public function logout()
+    {
+        // Unset user_id from session
+        if (isset($_SESSION['user_id'])) {
+            unset($_SESSION['user_id']);
+        }
+        if (isset($_SESSION['account_id'])) {
+            unset($_SESSION['account_id']);
+        }
+        // Clear the remember cookie
+        if (isset($_COOKIE['remember'])) {
+            unset($_COOKIE['remember']);
+            setcookie('remember', '', time() - 3600, '/'); // set the expiration date to one hour ago
+        }
+
+        // Clear the JWT token cookie
+        if (isset($_COOKIE['token'])) {
+            unset($_COOKIE['token']);
+            setcookie('token', '', time() - 3600, '/'); // set the expiration date to one hour ago
+        }
+
+        // Redirect to login page or home page after logout
+        header('Location: /login');
+        exit;
     }
 }
