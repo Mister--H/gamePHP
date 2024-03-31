@@ -1,0 +1,11 @@
+Model Information:
+* title:	Free fire-girl model
+* source:	https://sketchfab.com/3d-models/free-fire-girl-model-ea40e26803d045f1b93f225687b64797
+* author:	Phoenix... (https://sketchfab.com/projectend0005)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Free fire-girl model" (https://sketchfab.com/3d-models/free-fire-girl-model-ea40e26803d045f1b93f225687b64797) by Phoenix... (https://sketchfab.com/projectend0005) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

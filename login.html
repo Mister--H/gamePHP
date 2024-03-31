@@ -1,0 +1,22 @@
+<!-- login.html -->
+<form id="loginForm">
+    <input type="email" id="email" name="email" required placeholder="Email">
+    <input type="password" id="password" name="password" required placeholder="Password">
+    <button type="submit">Login</button>
+</form>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function() {
+    $('#loginForm').on('submit', function(e) {
+        e.preventDefault();
+        $.ajax({
+            type: 'POST',
+            url: 'login.php',
+            data: $(this).serialize(),
+            success: function(response) {
+                window.location.href = '/game.html';
+            }
+        });
+    });
+});
+</script>

@@ -1,0 +1,22 @@
+<!-- registration.html -->
+<form id="registrationForm">
+    <input type="email" id="email" name="email" required placeholder="Email">
+    <input type="password" id="password" name="password" required placeholder="Password">
+    <button type="submit">Register</button>
+</form>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function() {
+    $('#registrationForm').on('submit', function(e) {
+        e.preventDefault();
+        $.ajax({
+            type: 'POST',
+            url: 'registration.php',
+            data: $(this).serialize(),
+            success: function(response) {
+                window.location.href = '/login.html'; // Redirect to login.html
+            }
+        });
+    });
+});
+</script>
