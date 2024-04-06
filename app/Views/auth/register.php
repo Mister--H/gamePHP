@@ -1,3 +1,5 @@
+<div class="container p-4 my-4 rounded text-white"
+    style="min-height: 300px; width: 100%; background-image: linear-gradient(to bottom right, darkblue, black);">
 <form action="/register" method="post">
     <?php if (!empty($_SESSION['error'])): ?>
         <div class="alert alert-danger" role="alert">
@@ -19,3 +21,4 @@
     </div>
     <button type="submit" class="btn btn-primary">Register</button>
 </form>
+    </div>

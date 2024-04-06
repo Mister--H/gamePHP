@@ -23,6 +23,7 @@ $router->get('logout', 'AuthController@logout');
 $router->group('start', function($router) {
     $router->get('start', 'PageController@start');
     $router->get('start/settings', 'UserController@settings');
+    $router->post('start/settings', 'UserController@processSettings');
     
     
     // $router->get('dashboard/credentials/delete/{id}', 'CredentialController@deleteCredentials');

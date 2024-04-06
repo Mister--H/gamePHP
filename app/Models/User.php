@@ -35,11 +35,22 @@ class User
 
         // Prepare the document to insert
         $userDocument = [
-            'name' => $name,
             'email' => $email,
-            'password' => password_hash($password, PASSWORD_DEFAULT), // Hashing the password for security
+            'password' => $password, // Hashing the password for security
             'coins' => 100, // Starting coins
             'ownedPlaces' => [], // Array to store place IDs
+            'firstName' => '',
+            'lastName' => '',
+            'nickname' => $name,
+            'sex' => '',
+            'age' => '',
+            'phoneNumber' => '',
+            'instagram' => '',
+            'facebook' => '',
+            'twitter' => '',
+            'telegram' => '',
+            'bio' => '',
+            'avatar' => '',
         ];
 
         // Execute the insert operation
@@ -52,12 +63,12 @@ class User
         }
     }
 
-
     public function verifyUserCredentials($email, $password)
     {
         $collection = $this->db->getCollection('users');
         $user = $collection->findOne(['email' => $email]);
-
+        // $pass = password_verify($password, $user['password']);
+        // return $pass;
         if ($user && password_verify($password, $user['password'])) {
             return $user; // Return the user data if credentials are valid
         } else {
@@ -100,9 +111,56 @@ class User
     public function getUserById($userId)
     {
         $collection = $this->db->getCollection('users');
+
         $user = $collection->findOne(['_id' => $this->objectid($userId)]);
         return $user;
     }
+
+    public function saveProfile($email, $password, $firstName, $lastName, $nickname, $sex, $age, $phoneNumber, $instagram, $facebook, $twitter, $telegram, $bio, $avatar)
+    {
+        $collection = $this->db->getCollection('users');
+
+        // Prepare the document update query
+        $updateQuery = [
+            '$set' => [
+                'firstName' => $firstName,
+                'lastName' => $lastName,
+                'nickname' => $nickname,
+                'sex' => $sex,
+                'age' => $age,
+                'phoneNumber' => $phoneNumber,
+                'instagram' => $instagram,
+                'facebook' => $facebook,
+                'twitter' => $twitter,
+                'telegram' => $telegram,
+                'bio' => $bio,
+                'avatar' => $avatar,
+            ]
+        ];
+
+        // Check if password is provided and update it
+        if (!empty($password)) {
+            $updateQuery['$set']['password'] = password_hash($_POST['password'], PASSWORD_DEFAULT); // You may want to hash the password here for security
+        }
+        if (!empty($email) && $email !== $_SESSION['user']['email']) {
+            $updateQuery['$set']['email'] = $email;
+        }
+
+        // Execute the update operation
+        $result = $collection->updateOne(
+            ['email' => $email], // Match the user document by email
+            $updateQuery // Update with the prepared query
+        );
+        if ($result === false) {
+            return ['error' => 'An error occurred while updating the user profile.'];
+        }
+        
+        $user = $collection->findOne(['email' => $email]); // Update the user session data
+
+        return $user; // Return the number of documents modified
+    }
+
+
 
 
 

@@ -21,27 +21,52 @@ class UserController
     public function settings()
     {
         $data = [
-            'user' => $_SESSION['user'] ?? '',
+            'user' => $_SESSION['user_id'] ?? '',
         ];
         renderView('game/settings', $data);
     }
 
     public function processSettings()
     {
+        $firstName = $_POST['firstName'] ?? '';
+        $lastName = $_POST['lastName'] ?? '';
+        $nickname = $_POST['nickname'] ?? '';
+        $sex = $_POST['sex'] ?? '';
+        $age = $_POST['age'] ?? '';
+        $phoneNumber = $_POST['phoneNumber'] ?? '';
         $email = filter_var($_POST['email'] ?? '', FILTER_SANITIZE_EMAIL);
-        $password = $_POST['password'];
-        $rememberMe = isset($_POST['remember_me']);
+        $password = $_POST['password'] ?? '';
+        $instagram = $_POST['instagram'] ?? '';
+        $facebook = $_POST['facebook'] ?? '';
+        $twitter = $_POST['twitter'] ?? '';
+        $telegram = $_POST['telegram'] ?? '';
+        $bio = $_POST['bio'] ?? '';
 
-        $result = $this->auth->login($email, $password, $rememberMe);
+        // Handle uploaded file
+        $avatarPath = null;
+        if (isset($_FILES['avatar']) && $_FILES['avatar']['error'] === UPLOAD_ERR_OK) {
+            $avatarTmpPath = $_FILES['avatar']['tmp_name'];
+            $avatarFileName = $_FILES['avatar']['name'];
+            $avatarExtension = pathinfo($avatarFileName, PATHINFO_EXTENSION); // Get the file extension
+            $avatarNewFileName = uniqid() . '.' . $avatarExtension; // Generate a unique filename
+            $avatarPath = 'assets/img/users/avatars/' . $avatarNewFileName;
+
+            // Move the uploaded file to the destination folder with the new filename
+            move_uploaded_file($avatarTmpPath, $avatarPath);
+        }
+
+
+
+        $result = $this->user->saveProfile($email, $password, $firstName, $lastName, $nickname, $sex, $age, $phoneNumber, $instagram, $facebook, $twitter, $telegram, $bio, $avatarPath);
 
         if (isset($result['error'])) {
             $_SESSION['error'] = $result['error'];
-            header('Location: /login');
+            header('Location: /start/settings');
             exit;
         }
 
-        setcookie('token', $result['token'], ['httponly' => true, 'samesite' => 'Strict']);
-        header('Location: /start');
+        $_SESSION['user'] = $result;
+        header('Location: /start/settings');
         exit;
     }
 }

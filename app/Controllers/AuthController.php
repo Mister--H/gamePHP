@@ -34,7 +34,7 @@ class AuthController
         $rememberMe = isset($_POST['remember_me']);
 
         $result = $this->auth->login($email, $password, $rememberMe);
-
+        
         if (isset($result['error'])) {
             $_SESSION['error'] = $result['error'];
             header('Location: /login');

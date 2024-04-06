@@ -15,8 +15,8 @@ if (session_status() === PHP_SESSION_NONE) {
     <link rel="stylesheet" href="<?= asset('bootstrap-icons/font/bootstrap-icons.min.css') ?>">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&display=swap" rel="stylesheet">
 
-    <script src="https://unpkg.com/three@0.125.0/build/three.min.js"></script>
-    <script src="https://unpkg.com/three@0.125.0/examples/js/loaders/GLTFLoader.js"></script>
+    <!-- <script src="https://unpkg.com/three@0.125.0/build/three.min.js"></script>
+    <script src="https://unpkg.com/three@0.125.0/examples/js/loaders/GLTFLoader.js"></script> -->
     <script async defer
         src="https://maps.googleapis.com/maps/api/js?key=<?= $api ?>&libraries=places,drawing,geometry&callback=initMap"></script>
     <?php if ($_SERVER['REQUEST_URI'] !== '/'): ?>
@@ -30,11 +30,12 @@ if (session_status() === PHP_SESSION_NONE) {
 </head>
 
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark <?php echo (strpos($_SERVER['REQUEST_URI'], '/start') === 0) ? 'bg-dark' : 'bg-transparent'; ?> px-3 align-middle">
+    <nav
+        class="navbar navbar-expand-lg navbar-dark <?php echo (strpos($_SERVER['REQUEST_URI'], '/start') === 0 || strpos($_SERVER['REQUEST_URI'], '/login') === 0 || strpos($_SERVER['REQUEST_URI'], '/register') === 0) ? 'bg-dark' : 'bg-transparent'; ?> px-3 align-middle">
         <a class="navbar-brand text-primary d-flex fw-light" style="align-items:center;" href="#">
-            <i class="bi bi-infinity fs-1"></i> 
+            <i class="bi bi-infinity fs-1"></i>
             <span class="">
-                 Metan Game
+                Metan Game
             </span>
         </a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
@@ -48,25 +49,26 @@ if (session_status() === PHP_SESSION_NONE) {
                 </li>
             </ul>
         </div>
-        <ul class="navbar-nav ms-auto"> <!-- Change div to ul and ml-auto to ms-auto -->
+        <ul class="navbar-nav ms-auto">
             <li class="nav-item dropdown">
+                <?php if(isset($_SESSION['user_id'])) { ?>
                 <a class="nav-link dropdown-toggle text-white" href="#" id="navbarDropdown" role="button"
                     data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     <i class="bi bi-person"></i> Profile
                 </a>
                 <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                    <!-- Remove right from dropdown-menu-right -->
                     <a class="dropdown-item" href="start/settings"><i class="bi bi-gear"></i> Settings</a>
                     <a class="dropdown-item" href="#"><i class="bi bi-bell"></i> Notifications</a>
                     <div class="dropdown-divider"></div>
                     <a class="dropdown-item" href="/logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
+                    <?php } ?>
                 </div>
             </li>
         </ul>
     </nav>
     <!-- Main content area -->
     <div class="">
-        <?php echo $content; // This will be replaced with the view content   ?>
+        <?php echo $content; // This will be replaced with the view content    ?>
     </div>
 
     <script src="<?= asset('js/bootstrap.bundle.min.js') ?>"></script>

@@ -8,7 +8,7 @@ class PageController
 
     public function __construct()
     {
-        $this->userId = $_SESSION['user_id']['id'] ?? null;
+        $this->userId = $_SESSION['user_id'] ?? null;
     }
 
     public function home()
