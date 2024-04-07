@@ -47,6 +47,9 @@ if (session_status() === PHP_SESSION_NONE) {
                 <li class="nav-item active">
                     <a class="nav-link text-white" href="/"><i class="bi bi-app"></i> Home</a>
                 </li>
+                <li class="nav-item active">
+                    <a class="nav-link text-white" href="/start"><i class="bi bi-joystick"></i> Game</a>
+                </li>
             </ul>
         </div>
         <ul class="navbar-nav ms-auto">

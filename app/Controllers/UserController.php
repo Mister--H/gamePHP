@@ -43,7 +43,7 @@ class UserController
         $bio = $_POST['bio'] ?? '';
 
         // Handle uploaded file
-        $avatarPath = null;
+        $avatarPath = $_SESSION['user']['avatar'];
         if (isset($_FILES['avatar']) && $_FILES['avatar']['error'] === UPLOAD_ERR_OK) {
             $avatarTmpPath = $_FILES['avatar']['tmp_name'];
             $avatarFileName = $_FILES['avatar']['name'];

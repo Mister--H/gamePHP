@@ -1,8 +1,40 @@
+let markers = {}; // Object to store markers for each user
+
 function initMap() {
-  var berlin = { lat: 52.52, lng: 13.405 };
-  map = new google.maps.Map(document.getElementById("map"), {
+  let defaultPosition = { lat: 52.52, lng: 13.405 }; // Default position if no data is retrieved
+  fetch('api/getPosition')
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return response.json();
+    })
+    .then(data => {
+      // Check if the response contains position data
+      if (data && data.success && data.data && data.data.lat && data.data.lng) {
+        const lastLat = data.data.lat;
+        const lastLng = data.data.lng;
+        // Use the latitude and longitude values as needed
+        // For example, update the defaultPosition variable
+        defaultPosition = { lat: lastLat, lng: lastLng };
+      } else {
+        console.error('Invalid position data received:', data);
+      }
+      // Initialize the map with the retrieved or default position
+      initMapWithPosition(defaultPosition);
+    })
+    .catch(error => {
+      // Handle errors that occurred during the fetch request
+      console.error('Error fetching position data:', error);
+      // Initialize the map with the default position in case of an error
+      initMapWithPosition(defaultPosition);
+    });
+}
+
+function initMapWithPosition(position) {
+  const map = new google.maps.Map(document.getElementById("map"), {
     zoom: 18,
-    center: berlin,
+    center: position,
     mapTypeId: "satellite",
     heading: 320,
     tilt: 75.5,
@@ -17,8 +49,9 @@ function initMap() {
     ],
   });
 
+
   var marker = new google.maps.Marker({
-    position: berlin,
+    position: position,
     map: map,
     icon: {
       url: "../assets/img/characters/char1/char1-down.png",
@@ -41,6 +74,7 @@ function initMap() {
       case "w":
         lat += 0.0001;
         iconUrl = "../assets/img/characters/char1/char1-up.png";
+        console.log(lat, lng)
         break;
       case "s":
         lat -= 0.0001;
@@ -57,15 +91,45 @@ function initMap() {
     }
 
     var newPosition = { lat: lat, lng: lng };
-    if (iconUrl) {
-      marker.setIcon({
+
+// Assuming marker and map are defined earlier
+if (iconUrl) {
+    marker.setIcon({
         url: iconUrl,
         scaledSize: new google.maps.Size(86, 120),
-      });
+    });
+}
+
+marker.setPosition(newPosition);
+map.setCenter(newPosition);
+
+// Send data to the API endpoint
+fetch('api/setPosition', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(newPosition)
+})
+.then(response => {
+    if (!response.ok) {
+        throw new Error('Network response was not ok');
     }
-    marker.setPosition(newPosition);
-    map.setCenter(newPosition);
-  });
+    // Check if the response body is empty
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('application/json')) {
+        return response.json(); // Parse JSON only if content type is JSON
+    } else {
+        return {}; // Return empty object if response body is empty
+    }
+})
+.then(data => {
+    console.log('Position updated successfully:', data);
+})
+.catch(error => {
+    console.error('Error updating position:', error);
+});
+      });
 
   // Create a single instance of InfoWindow
   var infoWindow = new google.maps.InfoWindow();
@@ -74,46 +138,7 @@ function initMap() {
   // Handle the callback with an anonymous function.
   var service = new google.maps.places.PlacesService(map);
 
-  // Add a click event listener to the map
-  map.addListener("click", function (mapsMouseEvent) {
-    var geocoder = new google.maps.Geocoder();
-    let address = "";
-    geocoder.geocode(
-      { location: mapsMouseEvent.latLng },
-      function (results, status) {
-        if (status === "OK") {
-          if (results[0]) {
-            // Set the marker position to the location that the user clicked
-            marker.setPosition(mapsMouseEvent.latLng);
-
-            // Calculate the new position for the info window
-            var newPosition = {
-              lat: mapsMouseEvent.latLng.lat() + 0.0005,
-              lng: mapsMouseEvent.latLng.lng(),
-            };
-
-            // Set the info window's content and position
-            infoWindow.setContent(
-              `
-                <div class="container fs-3">
-                    <i class="bi bi-geo-alt-fill text-primary"></i>
-                    <span id="typingAnimation">` +
-                results[0].formatted_address +
-                `</span>
-                </div>
-                `
-            );
-            infoWindow.setPosition(newPosition);
-            infoWindow.open(map);
-          } else {
-            window.alert("No results found");
-          }
-        } else {
-          window.alert("Geocoder failed due to: " + status);
-        }
-      }
-    );
-  });
+  
 
   var drawingManager = new google.maps.drawing.DrawingManager({
     drawingMode: null, // Set drawing mode to null for default non-drawing mode

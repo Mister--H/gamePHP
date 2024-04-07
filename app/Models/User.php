@@ -94,7 +94,7 @@ class User
     public function validateRememberToken($token)
     {
         $collection = $this->db->getCollection('remember_tokens');
-        $currentDate = new MongoDB\BSON\UTCDateTime(time() * 1000); // Current time in UTCDateTime format
+        $currentDate = new \MongoDB\BSON\UTCDateTime(time() * 1000); // Current time in UTCDateTime format
 
         $tokens = $collection->find([
             'expires_at' => ['$gt' => $currentDate] // Find tokens that have not expired

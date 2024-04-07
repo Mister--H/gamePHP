@@ -110,8 +110,10 @@
                         <img src="<?= $_ENV['BASE_URL'] . '/' . $_SESSION['user']['avatar'] ?>" alt="Profile Avatar"
                             class="img-fluid mb-2 rounded" width="150px">
                     <?php endif; ?>
-                    <input type="file" class="form-control" id="avatar" name="avatar"
-                        value="<?= isset($_SESSION['user']['avatar']) ? $_ENV['BASE_URL'] . '/' . $_SESSION['user']['avatar'] : '' ?>">
+                    <div id="avatarContainer">
+                        <input type="file" class="form-control" id="avatar" name="avatar" <?= isset($_SESSION['user']['avatar']) && !empty($_SESSION['user']['avatar']) ? 'style="display:none"' : '' ?>>
+                        <button type="button" id="changeAvatarBtn"><i class="bi bi-pencil"></i></button>
+                    </div>
                 </div>
 
             </div>
@@ -155,6 +157,14 @@
                 icon.classList.add("bi-eye");
             }
         });
+        const avatarInput = document.getElementById('avatar');
+        const changeAvatarBtn = document.getElementById('changeAvatarBtn');
+        const avatarContainer = document.getElementById('avatarContainer');
+        // Show the avatar input when the change avatar button is clicked
+        changeAvatarBtn.addEventListener('click', function() {
+            avatarInput.style.display = 'block';
+        });
+        
     });
 
 </script>

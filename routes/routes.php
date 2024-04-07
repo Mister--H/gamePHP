@@ -24,6 +24,8 @@ $router->group('start', function($router) {
     $router->get('start', 'PageController@start');
     $router->get('start/settings', 'UserController@settings');
     $router->post('start/settings', 'UserController@processSettings');
+    $router->post('api/setPosition', 'GameController@setPosition');
+    $router->get('api/getPosition', 'GameController@getPosition');
     
     
     // $router->get('dashboard/credentials/delete/{id}', 'CredentialController@deleteCredentials');
