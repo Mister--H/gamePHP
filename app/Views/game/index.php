@@ -22,15 +22,16 @@
         left: 58%;
         right: 0;
         background-color: #fff;
-        border-top-left-radius: 10px;
-        border-top-right-radius: 10px;
+        border-radius: 10px;
+      
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        display: block;
+        display: none;
         width:30%;
     }
     </style>
+
     <div id="chatButtons" class="d-flex gap-2">
-        <button id="chatButton" class="btn btn-white border rounded-circle">
+        <button id="chatButton" onclick="showChat()" class="btn btn-white border rounded-circle">
             <i class="bi bi-chat" style="font-size: 24px; color: black;"></i>
         </button>
         </button>
@@ -44,9 +45,9 @@
     </div>
 
     <div id="chatContainer">
-        <div id="chatHeader" class="d-flex justify-content-between align-items-center p-2" style="background-color: #f8f9fa;">
+        <div id="chatHeader" class="d-flex justify-content-between align-items-center p-2 rounded" style="background-color: #f8f9fa;">
             <h5 class="m-0">Chat</h5>
-            <button id="closeChat" class="btn btn-sm btn-danger">
+            <button id="closeChat" onclick="closeChat()" class="btn btn-sm btn-danger">
                 <i class="bi bi-x"></i>
             </button>
         </div>
@@ -56,3 +57,14 @@
             <button id="sendMessage" class="btn btn-primary">Send</button>
         </div>
     </div>
+
+
+
+    <script>
+        function showChat(){
+            document.getElementById('chatContainer').style.display = 'block';
+        }
+        function closeChat(){
+            document.getElementById('chatContainer').style.display = 'none';
+        }
+    </script>
