@@ -1,56 +1,43 @@
-let markers = {}; // Object to store markers for each user
 
+let map; // Global reference to the map object
+let mainMarker; // Global reference to the main user's marker
+let playerMarkers = {}; // Object to store markers for each user
+
+// URL of your WebSocket server
 function initMap() {
-  let defaultPosition = { lat: 52.52, lng: 13.405 }; // Default position if no data is retrieved
-  fetch('api/getPosition')
-    .then(response => {
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      return response.json();
-    })
+  fetch('https://game.metans.de/api/getPosition')
+    .then(response => response.json())
     .then(data => {
-      // Check if the response contains position data
-      if (data && data.success && data.data && data.data.lat && data.data.lng) {
-        const lastLat = data.data.lat;
-        const lastLng = data.data.lng;
-        // Use the latitude and longitude values as needed
-        // For example, update the defaultPosition variable
-        defaultPosition = { lat: lastLat, lng: lastLng };
+      if (data.success) {
+        const position = {
+          lng: data.data.coordinates[0],
+          lat: data.data.coordinates[1]
+        };
+        initMapWithPosition(position);
       } else {
-        console.error('Invalid position data received:', data);
+        console.error('Failed to get position:', data.error);
+        initMapWithPosition({ lng: 13.405, lat: 52.52 }); // Default position
       }
-      // Initialize the map with the retrieved or default position
-      initMapWithPosition(defaultPosition);
     })
     .catch(error => {
-      // Handle errors that occurred during the fetch request
-      console.error('Error fetching position data:', error);
-      // Initialize the map with the default position in case of an error
-      initMapWithPosition(defaultPosition);
+      console.error('Error fetching position:', error);
+      initMapWithPosition({ lng: 13.405, lat: 52.52 }); // Default position
     });
 }
 
 function initMapWithPosition(position) {
-  const map = new google.maps.Map(document.getElementById("map"), {
+  map = new google.maps.Map(document.getElementById("map"), {
     zoom: 18,
     center: position,
     mapTypeId: "satellite",
     heading: 320,
     tilt: 75.5,
-    keyboardShortcuts: false, // Disable keyboard shortcuts
-    draggable: false, // Disable mouse dragging
-    styles: [
-      {
-        featureType: "poi",
-        elementType: "labels",
-        stylers: [{ visibility: "off" }], // Hide places labels
-      },
-    ],
+    keyboardShortcuts: false,
+    draggable: false,
+    styles: [{ featureType: "poi", elementType: "labels", stylers: [{ visibility: "off" }] }],
   });
 
-
-  var marker = new google.maps.Marker({
+  mainMarker = new google.maps.Marker({
     position: position,
     map: map,
     icon: {
@@ -59,86 +46,100 @@ function initMapWithPosition(position) {
     },
   });
 
-  // Preload images
-  var images = ["up", "down", "left", "right"].map((direction) => {
-    var img = new Image();
-    img.src = `../assets/img/characters/char1/char1-${direction}.png`;
-    return img;
-  });
-  document.addEventListener("keydown", function (event) {
-    var lat = marker.getPosition().lat();
-    var lng = marker.getPosition().lng();
-    var iconUrl = "../assets/img/characters/char1/char1-down.png"; // Default icon
-
-    switch (event.key) {
-      case "w":
-        lat += 0.0001;
-        iconUrl = "../assets/img/characters/char1/char1-up.png";
-        console.log(lat, lng)
-        break;
-      case "s":
-        lat -= 0.0001;
-        // iconUrl already has the default value
-        break;
-      case "a":
-        lng -= 0.0001;
-        iconUrl = "../assets/img/characters/char1/char1-left.png";
-        break;
-      case "d":
-        lng += 0.0001;
-        iconUrl = "../assets/img/characters/char1/char1-right.png";
-        break;
-    }
-
-    var newPosition = { lat: lat, lng: lng };
-
-// Assuming marker and map are defined earlier
-if (iconUrl) {
-    marker.setIcon({
-        url: iconUrl,
-        scaledSize: new google.maps.Size(86, 120),
-    });
+  preloadImages();
+  setupWebSocket(); // Setup WebSocket connection
+loadDrawing(); // Load drawing manager
+loadPurchasedPolygons();
 }
 
-marker.setPosition(newPosition);
-map.setCenter(newPosition);
+function preloadImages() {
+  ["up", "down", "left", "right"].forEach(direction => {
+    var img = new Image();
+    img.src = `../assets/img/characters/char1/char1-${direction}.png`;
+  });
+}
 
-// Send data to the API endpoint
-fetch('api/setPosition', {
-    method: 'POST',
-    headers: {
-        'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(newPosition)
-})
-.then(response => {
-    if (!response.ok) {
-        throw new Error('Network response was not ok');
-    }
-    // Check if the response body is empty
-    const contentType = response.headers.get('content-type');
-    if (contentType && contentType.includes('application/json')) {
-        return response.json(); // Parse JSON only if content type is JSON
-    } else {
-        return {}; // Return empty object if response body is empty
-    }
-})
-.then(data => {
-    console.log('Position updated successfully:', data);
-})
-.catch(error => {
-    console.error('Error updating position:', error);
-});
+function setupWebSocket() {
+
+  socket.on('nearbyPlayers', (playersData) => {
+    if (Array.isArray(playersData)) {
+      playersData.forEach(player => {
+        const position = { lat: player.lat, lng: player.lng };
+        const iconUrl = "../assets/img/characters/char1/char1-down.png";
+        addOrUpdatePlayerMarker(player.user_id, position, iconUrl);
       });
+    } else {
+      console.error('Received data is not an array:', playersData);
+    }
+  });
 
-  // Create a single instance of InfoWindow
-  var infoWindow = new google.maps.InfoWindow();
+  document.addEventListener("keydown", (event) => handleMovement(event));
+}
 
-  // Create the PlaceService and send the request.
-  // Handle the callback with an anonymous function.
-  var service = new google.maps.places.PlacesService(map);
+function handleMovement(event) {
+  let lat = mainMarker.getPosition().lat();
+  let lng = mainMarker.getPosition().lng();
+  let iconUrl = "../assets/img/characters/char1/char1-down.png";
 
+  switch (event.key) {
+    case "w":
+      lat += 0.0001;
+      iconUrl = "../assets/img/characters/char1/char1-up.png";
+      break;
+    case "s":
+      lat -= 0.0001;
+      break;
+    case "a":
+      lng -= 0.0001;
+      iconUrl = "../assets/img/characters/char1/char1-left.png";
+      break;
+    case "d":
+      lng += 0.0001;
+      iconUrl = "../assets/img/characters/char1/char1-right.png";
+      break;
+  }
+
+  const newPosition = { lng, lat };
+  mainMarker.setIcon({ url: iconUrl, scaledSize: new google.maps.Size(86, 120) });
+  mainMarker.setPosition(newPosition);
+  map.setCenter(newPosition);
+  socket.emit('sPosition', JSON.stringify(newPosition));
+}
+
+function addOrUpdatePlayerMarker(playerId, position, iconUrl) {
+  try {
+    // Check if marker already exists
+    console.log('Adding or updating player marker:', playerId, position, iconUrl);
+    const PlayerPosition = { lng: position.lng, lat: position.lat };
+    if (playerMarkers[playerId]) {
+      // Update the existing marker position
+      playerMarkers[playerId].setPosition(PlayerPosition);
+    } else {
+      // Create a new marker for new player
+
+  playerMarkers[playerId] = new google.maps.Marker({
+    position: PlayerPosition,
+    map: map,
+    icon: {
+      url: iconUrl,
+      scaledSize: new google.maps.Size(50, 75) // Smaller size for other players
+    }
+  });
+  console.log('Creating new player marker:', PlayerPosition);
+    }
+  } catch (error) {
+    console.error('Error updating or creating marker:', error);
+  }
+}
+
+function removePlayerMarker(playerId) {
+  if (playerMarkers[playerId]) {
+    playerMarkers[playerId].setMap(null);
+    delete playerMarkers[playerId];
+  }
+}
   
+function loadDrawing(){
 
   var drawingManager = new google.maps.drawing.DrawingManager({
     drawingMode: null, // Set drawing mode to null for default non-drawing mode
@@ -224,7 +225,7 @@ fetch('api/setPosition', {
       }
     }
   );
-
+}
   // Function to load a specific polygon given its path
   function loadSpecificPolygon(path) {
     var polygon = new google.maps.Polygon({
@@ -268,5 +269,5 @@ fetch('api/setPosition', {
     });
   }
 
-  loadPurchasedPolygons();
-}
+
+  

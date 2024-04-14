@@ -10,7 +10,7 @@ class GameModel
 {
     private $db; // MongoDB db instance.
     private $logger;
-    
+
 
     public function __construct(Database $db)
     {
@@ -21,20 +21,23 @@ class GameModel
         $this->logger->pushHandler(new StreamHandler(__DIR__ . '/../../logs/gamemodel.log', Logger::WARNING));
     }
 
-    public function updatePosition($lat, $lng)
+    public function updatePosition($lng, $lat, $user_id)
     {
         try {
             $collection = $this->db->getCollection('user_status');
 
             // Check if a document exists for the current user_id
-            $documentCount = $collection->countDocuments(['user_id' => $_SESSION['user_id']]);
+            $documentCount = $collection->countDocuments(['user_id' => $user_id]);
 
             if ($documentCount === 0) {
                 // If no document exists, insert a new document with default values
                 $initialDocument = [
-                    'user_id' => $_SESSION['user_id'],
+                    'user_id' => $user_id,
                     'coins' => 0.0,
-                    'lastPosition' => ['lat' => 0.0, 'lng' => 0.0],
+                    'lastPosition' => [
+                        'type' => 'Point',
+                        'coordinates' => [(float) $lng, (float) $lat]
+                    ],
                     'ownedPlaces' => [],
                     'status' => ''
                 ];
@@ -42,13 +45,12 @@ class GameModel
             }
 
             // Prepare the filter to find the document for the current user_id
-            $filter = ['user_id' => $_SESSION['user_id']];
+            $filter = ['user_id' => $user_id];
 
             // Prepare the updated document
             $updatedDocument = [
                 '$set' => [
-                    'lastPosition.lat' => (float) $lat,
-                    'lastPosition.lng' => (float) $lng
+                    'lastPosition.coordinates' => [(float) $lng, (float) $lat]
                 ]
             ];
 
@@ -77,7 +79,7 @@ class GameModel
             $collection = $this->db->getCollection('user_status');
 
             // Retrieve the document from the collection
-            $document = $collection->findOne(['user_id'=> $_SESSION['user_id']]);
+            $document = $collection->findOne(['user_id' => $_SESSION['user_id']]);
 
             if ($document) {
                 // If the document exists, return the lastPosition as an associative array
@@ -93,6 +95,55 @@ class GameModel
             return false;
         }
     }
+
+    public function getNearbyPlayers($lat, $lng, $userId){
+        try {
+            $radius = 1000;
+            $collection = $this->db->getCollection('user_status');
+            $currentUser = $userId;
+
+            // $this->logger->error('Excluding user ID: ' . $currentUser);  // Log current user ID being excluded
+
+
+            $filter = [
+                'lastPosition' => [
+                    '$nearSphere' => [
+                        '$geometry' => [
+                            'type' => 'Point',
+                            'coordinates' => [(float) $lng, (float) $lat]
+                        ],
+                        '$maxDistance' => $radius
+                    ]
+                    ],
+                'user_id' => ['$ne' => $currentUser]
+
+            ];
+
+            // Log the filter to debug
+            // $this->logger->error('Executing nearby search with filter: ' . json_encode($filter));
+
+            $documents = $collection->find($filter);
+            $nearbyPlayers = [];
+
+            foreach ($documents as $document) {
+                $nearbyPlayers[] = [
+                    'user_id' => $document['user_id'],
+                    'lat' => $document['lastPosition']['coordinates'][1],
+                    'lng' => $document['lastPosition']['coordinates'][0]
+                ];
+            }
+
+            // // Log the result count
+            // $this->logger->error('Found ' . count($nearbyPlayers) . ' nearby players.');
+
+            return $nearbyPlayers;
+        } catch (\Exception $e) {
+            $this->logger->error('Error retrieving nearby players: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+
 
 
 }

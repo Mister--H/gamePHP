@@ -19,34 +19,29 @@ class GameController
 
     public function setPosition()
     {
-        // Get the raw JSON data from the request body
-        $requestData = file_get_contents('php://input');
+        header('Content-Type: application/json'); // Ensure the content type is set to JSON
 
-        // Decode the JSON data into an associative array
+        $requestData = file_get_contents('php://input');
         $data = json_decode($requestData, true);
 
-        // Check if the JSON data is valid
         if ($data === null || !isset($data['lat'], $data['lng'])) {
-            // If JSON data is invalid or lat/lng is missing, return an error response
-            return json_encode(['success' => false, 'message' => 'Invalid or missing lat/lng data']);
+            echo json_encode(['success' => false, 'message' => 'Invalid or missing lat/lng data']);
+            return; // Important to stop further execution
         }
 
-        // Extract latitude and longitude from the JSON data
-        $lat = $data['lat'];
         $lng = $data['lng'];
+        $lat = $data['lat'];
+        $user_id = $data['user_id'];
 
-        // Pass data to the gameModel
-        $result = $this->GameModel->updatePosition($lat, $lng);
+        $result = $this->GameModel->updatePosition($lng, $lat, $user_id);
 
-        // Check if the update was successful
         if ($result) {
-            // If successful, return a success response
-            return json_encode(['success' => true, 'message' => 'Position updated successfully']);
+            echo json_encode(['success' => true, 'message' => 'Position updated successfully']);
         } else {
-            // If unsuccessful, return an error response
-            return json_encode(['success' => false, 'message' => 'Failed to update position']);
+            echo json_encode(['success' => false, 'message' => 'Failed to update position']);
         }
     }
+
 
 
     public function getPosition()
@@ -63,12 +58,32 @@ class GameController
             // Handle the error, perhaps log it or set a default value for LastPosition
             $error = 'error';
             // For example, setting a default position
-            $LastPosition = ['lat' => 0, 'lng' => 0];
             header('Content-Type: application/json');
             echo json_encode(['success' => false, 'error' => $error]);
             exit(); // Terminate script after sending JSON response
         }
     }
+
+    public function getNearbyPlayersPosition()
+    {
+        $input = file_get_contents('php://input');
+        $data = json_decode($input, true);
+
+        $lat = $data['lat'] ?? 0;  // Use null coalescing operator to provide default
+        $lng = $data['lng'] ?? 0;  // Use null coalescing operator to provide default
+        $userId = $data['userId'] ;
+        $nearbyPlayers = $this->GameModel->getNearbyPlayers($lat, $lng, $userId);
+
+        header('Content-Type: application/json');
+        if (!$nearbyPlayers) {
+            echo json_encode(['success' => false, 'message' => 'No nearby players found']);
+        } else {
+            echo json_encode(['success' => true, 'data' => $nearbyPlayers]);
+        }
+        exit();
+    }
+
+
 
 
 

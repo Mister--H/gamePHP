@@ -26,6 +26,7 @@ $router->group('start', function($router) {
     $router->post('start/settings', 'UserController@processSettings');
     $router->post('api/setPosition', 'GameController@setPosition');
     $router->get('api/getPosition', 'GameController@getPosition');
+    $router->post('api/getNearbyPlayersPosition', 'GameController@getNearbyPlayersPosition');
     
     
     // $router->get('dashboard/credentials/delete/{id}', 'CredentialController@deleteCredentials');

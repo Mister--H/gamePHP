@@ -3,6 +3,12 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
+if (isset($_SESSION['user_id'])) {
+    $userId = $_SESSION['user_id']; // Safely fetch user ID from session
+} else {
+    // Handle cases where the user ID is not available
+    $userId = "null";
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -17,10 +23,16 @@ if (session_status() === PHP_SESSION_NONE) {
 
     <!-- <script src="https://unpkg.com/three@0.125.0/build/three.min.js"></script>
     <script src="https://unpkg.com/three@0.125.0/examples/js/loaders/GLTFLoader.js"></script> -->
+    <script> const userId = <?php echo json_encode($userId); ?>; </script>
+    <script src="<?= asset('js/socket.io.min.js') ?>"></script>
+    <script> const socket = io({
+            query: { userId: userId }
+        });  </script>
     <script async defer
         src="https://maps.googleapis.com/maps/api/js?key=<?= $api ?>&libraries=places,drawing,geometry&callback=initMap"></script>
     <?php if ($_SERVER['REQUEST_URI'] !== '/'): ?>
-        <script src="<?= asset('js/map.js') ?>"></script>
+        <script src="<?= asset('js/map.js?v=1216266962366996626666669926666669') ?>"></script>
+
     <?php endif; ?>
     <style>
         #map {
@@ -54,16 +66,16 @@ if (session_status() === PHP_SESSION_NONE) {
         </div>
         <ul class="navbar-nav ms-auto">
             <li class="nav-item dropdown">
-                <?php if(isset($_SESSION['user_id'])) { ?>
-                <a class="nav-link dropdown-toggle text-white" href="#" id="navbarDropdown" role="button"
-                    data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    <i class="bi bi-person"></i> Profile
-                </a>
-                <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                    <a class="dropdown-item" href="start/settings"><i class="bi bi-gear"></i> Settings</a>
-                    <a class="dropdown-item" href="#"><i class="bi bi-bell"></i> Notifications</a>
-                    <div class="dropdown-divider"></div>
-                    <a class="dropdown-item" href="/logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
+                <?php if (isset($_SESSION['user_id'])) { ?>
+                    <a class="nav-link dropdown-toggle text-white" href="#" id="navbarDropdown" role="button"
+                        data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="bi bi-person"></i> Profile
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                        <a class="dropdown-item" href="start/settings"><i class="bi bi-gear"></i> Settings</a>
+                        <a class="dropdown-item" href="#"><i class="bi bi-bell"></i> Notifications</a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="/logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
                     <?php } ?>
                 </div>
             </li>
@@ -71,7 +83,7 @@ if (session_status() === PHP_SESSION_NONE) {
     </nav>
     <!-- Main content area -->
     <div class="">
-        <?php echo $content; // This will be replaced with the view content    ?>
+        <?php echo $content; // This will be replaced with the view content              ?>
     </div>
 
     <script src="<?= asset('js/bootstrap.bundle.min.js') ?>"></script>
