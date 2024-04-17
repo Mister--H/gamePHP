@@ -102,9 +102,6 @@ class GameModel
             $collection = $this->db->getCollection('user_status');
             $currentUser = $userId;
 
-            // $this->logger->error('Excluding user ID: ' . $currentUser);  // Log current user ID being excluded
-
-
             $filter = [
                 'lastPosition' => [
                     '$nearSphere' => [
@@ -119,9 +116,6 @@ class GameModel
 
             ];
 
-            // Log the filter to debug
-            // $this->logger->error('Executing nearby search with filter: ' . json_encode($filter));
-
             $documents = $collection->find($filter);
             $nearbyPlayers = [];
 
@@ -132,9 +126,6 @@ class GameModel
                     'lng' => $document['lastPosition']['coordinates'][0]
                 ];
             }
-
-            // // Log the result count
-            // $this->logger->error('Found ' . count($nearbyPlayers) . ' nearby players.');
 
             return $nearbyPlayers;
         } catch (\Exception $e) {

@@ -31,7 +31,7 @@ if (isset($_SESSION['user_id'])) {
     <script async defer
         src="https://maps.googleapis.com/maps/api/js?key=<?= $api ?>&libraries=places,drawing,geometry&callback=initMap"></script>
     <?php if ($_SERVER['REQUEST_URI'] !== '/'): ?>
-        <script src="<?= asset('js/map.js?v=1216266962366996626666669926666669') ?>"></script>
+        <script src="<?= asset('js/map.js?v=9876543210123456789876543') ?>"></script>
 
     <?php endif; ?>
     <style>

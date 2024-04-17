@@ -62,7 +62,6 @@ class User
             return false; // Return false if insert failed
         }
     }
-
     public function verifyUserCredentials($email, $password)
     {
         $collection = $this->db->getCollection('users');
@@ -75,7 +74,6 @@ class User
             return false; // Return false if credentials are invalid
         }
     }
-
     public function storeRememberToken($userId, $token)
     {
         $collection = $this->db->getCollection('remember_tokens');
@@ -88,9 +86,6 @@ class User
             'expires_at' => $expiresAt,
         ]);
     }
-
-
-
     public function validateRememberToken($token)
     {
         $collection = $this->db->getCollection('remember_tokens');
@@ -112,7 +107,7 @@ class User
     {
         $collection = $this->db->getCollection('users');
 
-        $user = $collection->findOne(['_id' => $this->objectid($userId)]);
+         $user = $collection->findOne(['_id' => new \MongoDB\BSON\ObjectID($userId)]);
         return $user;
     }
 

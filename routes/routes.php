@@ -27,15 +27,11 @@ $router->group('start', function($router) {
     $router->post('api/setPosition', 'GameController@setPosition');
     $router->get('api/getPosition', 'GameController@getPosition');
     $router->post('api/getNearbyPlayersPosition', 'GameController@getNearbyPlayersPosition');
-    
-    
-    // $router->get('dashboard/credentials/delete/{id}', 'CredentialController@deleteCredentials');
-  
-
-    
+    $router->post('api/getUserInfo', 'UserController@getUserInfo');
 }, ['middleware' => function() use ($auth) {
     return $auth->isLoggedIn();
-    }]);
+}]);
 
 // Save $router for use in the front controller
 return $router;
+// $router->get('dashboard/credentials/delete/{id}', 'CredentialController@deleteCredentials');

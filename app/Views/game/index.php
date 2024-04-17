@@ -1,6 +1,6 @@
     <div id="map" style="width: 100%; height: 100vh"></div>
     <style>
-            #chatButtons {
+    #chatButtons {
         position: absolute;
         bottom: -70px;
         left: 50%;
@@ -53,11 +53,50 @@
         </div>
         <div id="chatMessages" class="p-2" style="height: 200px; overflow-y: auto;"></div>
         <div id="chatInput" class="d-flex p-2">
-            <input type="text" id="message" class="form-control" placeholder="Type a message...">
-            <button id="sendMessage" class="btn btn-primary">Send</button>
+            <form action="" id="form">
+                <input type="text" id="message" class="form-control" placeholder="Type a message...">
+                <button type="submit" id="sendMessage" class="btn btn-primary">Send</button>
+            </form>
         </div>
     </div>
 
+    <div id="arrowKeys" class="d-lg-none d-sm-flex justify-content-center" style="position: absolute;bottom: -80px;left: 50px;width: 150px;background: #ffffff30;border-radius: 50%;border: 1px solid #fff;">
+    <button id="upButton" class="btn btn-white border rounded-circle">
+        <i class="bi bi-arrow-up" style="font-size: 24px; color: black;"></i>
+    </button>
+    <div style="height: 50px;width: 150px;display: flex;justify-content: space-around;">
+        <button id="leftButton" class="btn btn-white border rounded-circle">
+            <i class="bi bi-arrow-left" style="font-size: 24px; color: black;"></i>
+        </button>
+        <button id="rightButton" class="btn btn-white border rounded-circle">
+            <i class="bi bi-arrow-right" style="font-size: 24px; color: black;"></i>
+        </button>
+    </div>
+    <button id="downButton" class="btn btn-white border rounded-circle">
+        <i class="bi bi-arrow-down" style="font-size: 24px; color: black;"></i>
+    </button>
+</div>
+
+<style>
+    @media only screen and (max-width: 991px) {
+        #arrowKeys {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            bottom: 30px !important;
+            width: 90px !important;
+            left: 70px !important;
+        }
+        #arrowKeys i {
+            font-size:16px !important
+        }
+        #arrowKeys div {
+            height: 35px !important;
+            width: 90px !important;
+        }
+       
+    }
+</style>
 
 
     <script>
@@ -67,4 +106,21 @@
         function closeChat(){
             document.getElementById('chatContainer').style.display = 'none';
         }
+        const form = document.getElementById('form');
+        const input = document.getElementById('message');
+        const messages = document.getElementById('chatMessages');
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (input.value) {
+            socket.emit('chat message', input.value);
+            input.value = '';
+            }
+        });
+        socket.on('chat message', (msg) => {
+            const item = document.createElement('li');
+            item.textContent = msg['userId'] + ': ' + msg['message'];
+            messages.appendChild(item);
+            form.scrollTo(0, document.body.scrollHeight);
+        });
     </script>

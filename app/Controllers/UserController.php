@@ -69,4 +69,16 @@ class UserController
         header('Location: /start/settings');
         exit;
     }
+
+    public function getUserInfo(){
+        $input = file_get_contents('php://input');
+        $data = json_decode($input, true);
+
+        $userId = $data['userId'];
+        $user = $this->user->getUserById($userId);
+        header('Content-Type: application/json');
+        echo json_encode($user);
+    }
+    
+
 }

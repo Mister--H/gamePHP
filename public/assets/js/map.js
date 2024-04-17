@@ -60,7 +60,6 @@ function preloadImages() {
 }
 
 function setupWebSocket() {
-
   socket.on('nearbyPlayers', (playersData) => {
     if (Array.isArray(playersData)) {
       playersData.forEach(player => {
@@ -72,32 +71,63 @@ function setupWebSocket() {
       console.error('Received data is not an array:', playersData);
     }
   });
-
-  document.addEventListener("keydown", (event) => handleMovement(event));
+    socket.on('updatePosition', (data) => {
+    const position = { lat: data.position.lat, lng: data.position.lng };
+    const iconUrl = "../assets/img/characters/char1/char1-down.png"; // Use appropriate icon
+    addOrUpdatePlayerMarker(data.userId, position, iconUrl);
+  });
+  document.addEventListener("keydown", (event) => handleKeyDown(event));
+  // Add event listeners to the arrow buttons for tap events
+document.getElementById("upButton").addEventListener("click", () => handleMovement("up"));
+document.getElementById("downButton").addEventListener("click", () => handleMovement("down"));
+document.getElementById("leftButton").addEventListener("click", () => handleMovement("left"));
+document.getElementById("rightButton").addEventListener("click", () => handleMovement("right"));
 }
 
-function handleMovement(event) {
-  let lat = mainMarker.getPosition().lat();
-  let lng = mainMarker.getPosition().lng();
-  let iconUrl = "../assets/img/characters/char1/char1-down.png";
 
-  switch (event.key) {
-    case "w":
-      lat += 0.0001;
-      iconUrl = "../assets/img/characters/char1/char1-up.png";
-      break;
-    case "s":
-      lat -= 0.0001;
-      break;
-    case "a":
-      lng -= 0.0001;
-      iconUrl = "../assets/img/characters/char1/char1-left.png";
-      break;
-    case "d":
-      lng += 0.0001;
-      iconUrl = "../assets/img/characters/char1/char1-right.png";
-      break;
-  }
+
+// Function to handle keyboard events
+function handleKeyDown(event) {
+    const keyMappings = {
+        "w": "up",
+        "s": "down",
+        "a": "left",
+        "d": "right",
+        "ص": "up",
+        "س": "down",
+        "ش": "left",
+        "ی": "right"
+    };
+
+    const direction = keyMappings[event.key];
+    if (direction) {
+        handleMovement(direction);
+    }
+}
+
+// Function to move the character based on the direction
+function handleMovement(direction) {
+    let lat = mainMarker.getPosition().lat();
+    let lng = mainMarker.getPosition().lng();
+    let iconUrl = "../assets/img/characters/char1/char1-down.png";
+
+    switch (direction) {
+        case "up":
+            lat += 0.0001;
+            iconUrl = "../assets/img/characters/char1/char1-up.png";
+            break;
+        case "down":
+            lat -= 0.0001;
+            break;
+        case "left":
+            lng -= 0.0001;
+            iconUrl = "../assets/img/characters/char1/char1-left.png";
+            break;
+        case "right":
+            lng += 0.0001;
+            iconUrl = "../assets/img/characters/char1/char1-right.png";
+            break;
+    }
 
   const newPosition = { lng, lat };
   mainMarker.setIcon({ url: iconUrl, scaledSize: new google.maps.Size(86, 120) });
@@ -107,29 +137,27 @@ function handleMovement(event) {
 }
 
 function addOrUpdatePlayerMarker(playerId, position, iconUrl) {
-  try {
     // Check if marker already exists
-    console.log('Adding or updating player marker:', playerId, position, iconUrl);
     const PlayerPosition = { lng: position.lng, lat: position.lat };
     if (playerMarkers[playerId]) {
       // Update the existing marker position
       playerMarkers[playerId].setPosition(PlayerPosition);
     } else {
-      // Create a new marker for new player
+        // Create a new marker for new player
+        playerMarkers[playerId] = new google.maps.Marker({
+          position: PlayerPosition,
+          map: map,
+          icon: {
+            url: iconUrl,
+            scaledSize: new google.maps.Size(50, 75) // Smaller size for other players
+          },
+        });
+         // Attach a click event listener to the marker
+         playerMarkers[playerId].addListener('click', function() {
+            fetchUserInfo(playerId, playerMarkers[playerId]);
+        });
+    }
 
-  playerMarkers[playerId] = new google.maps.Marker({
-    position: PlayerPosition,
-    map: map,
-    icon: {
-      url: iconUrl,
-      scaledSize: new google.maps.Size(50, 75) // Smaller size for other players
-    }
-  });
-  console.log('Creating new player marker:', PlayerPosition);
-    }
-  } catch (error) {
-    console.error('Error updating or creating marker:', error);
-  }
 }
 
 function removePlayerMarker(playerId) {
@@ -270,4 +298,44 @@ function loadDrawing(){
   }
 
 
-  
+ async function fetchUserInfo(userId, marker) {
+    try {
+        const response = await fetch('https://game.metans.de/api/getUserInfo', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ userId: userId })
+        });
+
+        if (response.ok) {
+            const user = await response.json();
+            showInfoWindow(user, marker);
+        } else {
+            console.error('No user info found for userId:', userId);
+        }
+    } catch (error) {
+        console.error('Error fetching user info:', error);
+    }
+}
+
+function showInfoWindow(user, marker) {
+    const contentString = `
+        <div id="content" class="p-3">
+        <img src="${user.avatar}" alt="Avatar" style="width:50px;height:50px; border-radius:50%">
+            <h1>${user.nickname || 'No Nickname'}</h1>
+            <p><i class="bi bi-instagram"></i><a href="https://instagram.com/${user.instagram}"> @${user.instagram} </a></p>
+            <p><i class="bi bi-telegram"></i><a href="https://t.me/${user.telegram}"> @${user.telegram} </a></p>
+            <p><i class="bi bi-coin"></i> Coins: ${user.coins}</p>
+        </div>`;
+
+    const infoWindow = new google.maps.InfoWindow({
+        content: contentString
+    });
+
+    infoWindow.open({
+        anchor: marker,
+        map,
+        shouldFocus: false
+    });
+}
